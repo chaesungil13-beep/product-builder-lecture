@@ -40,6 +40,7 @@
         </div>
         <nav class="topbar-nav" aria-label="주요 메뉴">
           <a href="#how-to-use" class="nav-link">이용방법</a>
+          <a href="#analysis-mode" class="nav-link">분석</a>
           <a href="#about-lotto" class="nav-link">로또란?</a>
           <a href="#odds" class="nav-link">확률</a>
           <a href="#faq" class="nav-link">FAQ</a>
@@ -102,6 +103,28 @@
             <input id="includeBonus" type="checkbox" />
             <span>보너스 번호</span>
           </label>
+          <label class="switch">
+            <input id="excludeLastDraw" type="checkbox" />
+            <span>직전 회차 번호 제외</span>
+          </label>
+          <label class="field">
+            <span>홀짝 비율</span>
+            <select id="oddEvenRatio">
+              <option value="any" selected>자유</option>
+              <option value="3-3">3:3</option>
+              <option value="4-2">홀 4 / 짝 2</option>
+              <option value="2-4">홀 2 / 짝 4</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>총합 구간</span>
+            <select id="sumRange">
+              <option value="any" selected>자유</option>
+              <option value="80-120">80-120</option>
+              <option value="121-160">121-160</option>
+              <option value="161-200">161-200</option>
+            </select>
+          </label>
         </div>
         <div class="actions">
           <button class="primary" id="generateButton" type="button">번호 생성</button>
@@ -146,6 +169,60 @@
         </div>
       </section>
     </main>
+
+    <section class="analysis-dashboard" id="analysis-mode" aria-labelledby="analysis-title">
+      <div class="dashboard-heading">
+        <div>
+          <p class="eyebrow">DATA MODE</p>
+          <h2 id="analysis-title">데이터 기반 분석 모드</h2>
+        </div>
+        <span class="data-badge" id="analysisDrawRange">최근 100회차 샘플</span>
+      </div>
+      <p class="dashboard-note">
+        아래 분석은 최근 회차 패턴을 이해하기 위한 참고 자료입니다. 특정 번호나 필터가 당첨 확률을 높인다는 의미는 아닙니다.
+      </p>
+
+      <div class="dashboard-grid">
+        <article class="metric-card">
+          <span>핫 넘버</span>
+          <div class="number-pills" id="hotNumbers"></div>
+        </article>
+        <article class="metric-card">
+          <span>콜드 넘버</span>
+          <div class="number-pills" id="coldNumbers"></div>
+        </article>
+        <article class="metric-card">
+          <span>직전 회차</span>
+          <div class="number-pills" id="lastDrawNumbers"></div>
+        </article>
+      </div>
+
+      <div class="analysis-layout">
+        <article class="chart-panel" aria-labelledby="frequency-title">
+          <h3 id="frequency-title">번호별 출현 빈도</h3>
+          <div class="frequency-chart" id="frequencyChart"></div>
+        </article>
+        <article class="chart-panel" aria-labelledby="filter-title">
+          <h3 id="filter-title">필터 적용 요약</h3>
+          <div class="filter-summary">
+            <div>
+              <strong id="activeFilterCount">0개</strong>
+              <span>활성 필터</span>
+            </div>
+            <div>
+              <strong id="candidateSignal">기본</strong>
+              <span>후보 제한 강도</span>
+            </div>
+            <div>
+              <strong id="generatedSum">-</strong>
+              <span>최근 생성 총합</span>
+            </div>
+          </div>
+          <div class="constraint-bars" id="constraintBars"></div>
+          <p class="table-note">필터는 조합의 성격을 바꾸는 도구이며, 각 6개 번호 조합의 1등 당첨 확률은 동일합니다.</p>
+        </article>
+      </div>
+    </section>
 
     <!-- ── 이용 방법 ── -->
     <div class="content-wrap">

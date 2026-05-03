@@ -2,6 +2,9 @@ const resultList = document.querySelector("#resultList");
 const savedList = document.querySelector("#savedList");
 const gameCount = document.querySelector("#gameCount");
 const includeBonus = document.querySelector("#includeBonus");
+const excludeLastDraw = document.querySelector("#excludeLastDraw");
+const oddEvenRatio = document.querySelector("#oddEvenRatio");
+const sumRange = document.querySelector("#sumRange");
 const generateButton = document.querySelector("#generateButton");
 const copyButton = document.querySelector("#copyButton");
 const clearButton = document.querySelector("#clearButton");
@@ -20,6 +23,15 @@ const soundIconOn = document.querySelector("#soundIconOn");
 const soundIconOff = document.querySelector("#soundIconOff");
 const expandIcon = document.querySelector("#expandIcon");
 const compressIcon = document.querySelector("#compressIcon");
+const hotNumbers = document.querySelector("#hotNumbers");
+const coldNumbers = document.querySelector("#coldNumbers");
+const lastDrawNumbers = document.querySelector("#lastDrawNumbers");
+const frequencyChart = document.querySelector("#frequencyChart");
+const activeFilterCount = document.querySelector("#activeFilterCount");
+const candidateSignal = document.querySelector("#candidateSignal");
+const generatedSum = document.querySelector("#generatedSum");
+const constraintBars = document.querySelector("#constraintBars");
+const analysisDrawRange = document.querySelector("#analysisDrawRange");
 
 const STORAGE_KEY = "lotto.saved.games";
 const THEME_KEY = "lotto.theme";
@@ -29,6 +41,8 @@ let currentGames = [];
 let toastTimer = null;
 let soundEnabled = localStorage.getItem(SOUND_KEY) !== "false";
 let audioCtx = null;
+const recentDraws = createRecentDrawSample(100);
+const lastDraw = recentDraws[recentDraws.length - 1];
 
 // ─── Toast ───────────────────────────────────────────
 function showToast(message, duration = 2000) {
@@ -158,6 +172,156 @@ function getRandomInt(maxExclusive) {
   } while (values[0] >= limit);
 
   return values[0] % maxExclusive;
+}
+
+function createRecentDrawSample(count) {
+  const draws = [];
+  let seed = 20260503;
+
+  function nextSeededInt(maxExclusive) {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed % maxExclusive;
+  }
+
+  for (let i = 0; i < count; i += 1) {
+    const numbers = new Set();
+    while (numbers.size < 6) {
+      numbers.add(nextSeededInt(45) + 1);
+    }
+    draws.push([...numbers].sort((a, b) => a - b));
+  }
+
+  return draws;
+}
+
+function getNumberFrequency(draws) {
+  const frequency = Array.from({ length: 45 }, (_, index) => ({
+    number: index + 1,
+    count: 0,
+  }));
+
+  draws.flat().forEach((number) => {
+    frequency[number - 1].count += 1;
+  });
+
+  return frequency;
+}
+
+function createNumberPill(number, count = null) {
+  const pill = document.createElement("span");
+  pill.className = `mini-ball ${numberClass(number)}`;
+  pill.textContent = count === null ? number : `${number}(${count})`;
+  return pill;
+}
+
+function renderAnalysisDashboard() {
+  const frequency = getNumberFrequency(recentDraws);
+  const sorted = [...frequency].sort((a, b) => b.count - a.count || a.number - b.number);
+  const maxCount = Math.max(...frequency.map((item) => item.count));
+
+  analysisDrawRange.textContent = `최근 ${recentDraws.length}회차 샘플`;
+  hotNumbers.replaceChildren(...sorted.slice(0, 6).map((item) => createNumberPill(item.number, item.count)));
+  coldNumbers.replaceChildren(...sorted.slice(-6).reverse().map((item) => createNumberPill(item.number, item.count)));
+  lastDrawNumbers.replaceChildren(...lastDraw.map((number) => createNumberPill(number)));
+
+  frequencyChart.replaceChildren();
+  frequency.forEach((item) => {
+    const bar = document.createElement("div");
+    bar.className = "frequency-bar";
+    bar.style.setProperty("--bar-height", `${Math.max(8, (item.count / maxCount) * 100)}%`);
+    bar.title = `${item.number}번: ${item.count}회`;
+
+    const fill = document.createElement("span");
+    fill.className = "frequency-fill";
+    const label = document.createElement("em");
+    label.textContent = item.number;
+    bar.append(fill, label);
+    frequencyChart.append(bar);
+  });
+}
+
+function getActiveFilters() {
+  return {
+    excludeLast: excludeLastDraw.checked,
+    ratio: oddEvenRatio.value,
+    sum: sumRange.value,
+  };
+}
+
+function getFilterCount(filters = getActiveFilters()) {
+  return [filters.excludeLast, filters.ratio !== "any", filters.sum !== "any"].filter(Boolean).length;
+}
+
+function parseRange(value) {
+  if (value === "any") return null;
+  const [min, max] = value.split("-").map(Number);
+  return { min, max };
+}
+
+function matchesFilters(numbers, filters = getActiveFilters()) {
+  if (filters.excludeLast && numbers.some((number) => lastDraw.includes(number))) {
+    return false;
+  }
+
+  if (filters.ratio !== "any") {
+    const [oddTarget, evenTarget] = filters.ratio.split("-").map(Number);
+    const oddCount = numbers.filter((number) => number % 2 === 1).length;
+    if (oddCount !== oddTarget || numbers.length - oddCount !== evenTarget) {
+      return false;
+    }
+  }
+
+  const range = parseRange(filters.sum);
+  if (range) {
+    const sum = numbers.reduce((total, number) => total + number, 0);
+    if (sum < range.min || sum > range.max) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function generateFilteredNumbers() {
+  const filters = getActiveFilters();
+
+  for (let attempt = 0; attempt < 5000; attempt += 1) {
+    const numbers = randomNumbers(6, 45);
+    if (matchesFilters(numbers, filters)) {
+      return numbers;
+    }
+  }
+
+  showToast("조건이 너무 좁아 기본 무작위 조합으로 생성했습니다.");
+  return randomNumbers(6, 45);
+}
+
+function renderFilterSummary() {
+  const filters = getActiveFilters();
+  const count = getFilterCount(filters);
+  const latestSums = currentGames.map((game) => game.numbers.reduce((total, number) => total + number, 0));
+  const averageSum = latestSums.length
+    ? Math.round(latestSums.reduce((total, sum) => total + sum, 0) / latestSums.length)
+    : null;
+
+  activeFilterCount.textContent = `${count}개`;
+  candidateSignal.textContent = count === 0 ? "기본" : count === 1 ? "낮음" : count === 2 ? "중간" : "높음";
+  generatedSum.textContent = averageSum ? `${averageSum}` : "-";
+
+  const rows = [
+    { label: "직전 회차 제외", active: filters.excludeLast },
+    { label: "홀짝 비율 고정", active: filters.ratio !== "any" },
+    { label: "총합 구간 제한", active: filters.sum !== "any" },
+  ];
+
+  constraintBars.replaceChildren();
+  rows.forEach((row) => {
+    const item = document.createElement("div");
+    item.className = "constraint-row";
+    item.innerHTML = `<span>${row.label}</span><strong>${row.active ? "적용" : "자유"}</strong>`;
+    item.style.setProperty("--constraint-width", row.active ? "100%" : "28%");
+    constraintBars.append(item);
+  });
 }
 
 function numberClass(number) {
@@ -305,7 +469,7 @@ function updateStats() {
 function generateGames() {
   const count = Number(gameCount.value);
   currentGames = Array.from({ length: count }, () => {
-    const numbers = randomNumbers(6, 45);
+    const numbers = generateFilteredNumbers();
     const bonusPool = Array.from({ length: 45 }, (_, i) => i + 1).filter((n) => !numbers.includes(n));
     return {
       numbers,
@@ -315,6 +479,7 @@ function generateGames() {
 
   renderResults();
   updateStats();
+  renderFilterSummary();
 
   // Play staggered ball sounds matching the visual animation timing
   currentGames.forEach((game, cardIndex) => {
@@ -352,6 +517,7 @@ function clearResults() {
   currentGames = [];
   renderResults();
   updateStats();
+  renderFilterSummary();
 }
 
 // ─── Keyboard shortcut ───────────────────────────────
@@ -367,6 +533,9 @@ document.addEventListener("keydown", (e) => {
 generateButton.addEventListener("click", generateGames);
 copyButton.addEventListener("click", copyCurrentGames);
 clearButton.addEventListener("click", clearResults);
+excludeLastDraw.addEventListener("change", renderFilterSummary);
+oddEvenRatio.addEventListener("change", renderFilterSummary);
+sumRange.addEventListener("change", renderFilterSummary);
 deleteSavedButton.addEventListener("click", () => {
   localStorage.removeItem(STORAGE_KEY);
   renderSaved();
@@ -393,6 +562,8 @@ document.querySelectorAll(".faq-question").forEach((btn) => {
 applyTheme(localStorage.getItem(THEME_KEY) || "light");
 updateSoundUI();
 updateFullscreenUI();
+renderAnalysisDashboard();
+renderFilterSummary();
 renderResults();
 renderSaved();
 updateStats();
