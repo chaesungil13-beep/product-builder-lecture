@@ -355,6 +355,22 @@ deleteSavedButton.addEventListener("click", () => {
   showToast("저장된 조합이 모두 삭제되었습니다.");
 });
 
+// ─── FAQ accordion ───────────────────────────────────
+document.querySelectorAll(".faq-question").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const item = btn.closest(".faq-item");
+    const isOpen = item.classList.contains("open");
+    document.querySelectorAll(".faq-item.open").forEach((el) => {
+      el.classList.remove("open");
+      el.querySelector(".faq-question").setAttribute("aria-expanded", "false");
+    });
+    if (!isOpen) {
+      item.classList.add("open");
+      btn.setAttribute("aria-expanded", "true");
+    }
+  });
+});
+
 // ─── Init ────────────────────────────────────────────
 applyTheme(localStorage.getItem(THEME_KEY) || "light");
 updateSoundUI();
