@@ -137,9 +137,27 @@ function saveGames(games) {
 function randomNumbers(size, max) {
   const numbers = new Set();
   while (numbers.size < size) {
-    numbers.add(Math.floor(Math.random() * max) + 1);
+    numbers.add(getRandomInt(max) + 1);
   }
   return [...numbers].sort((a, b) => a - b);
+}
+
+function getRandomInt(maxExclusive) {
+  const cryptoApi = window.crypto || window.msCrypto;
+
+  if (!cryptoApi?.getRandomValues) {
+    return Math.floor(Math.random() * maxExclusive);
+  }
+
+  const maxUint32 = 0xffffffff;
+  const limit = maxUint32 - (maxUint32 % maxExclusive);
+  const values = new Uint32Array(1);
+
+  do {
+    cryptoApi.getRandomValues(values);
+  } while (values[0] >= limit);
+
+  return values[0] % maxExclusive;
 }
 
 function numberClass(number) {
@@ -291,7 +309,7 @@ function generateGames() {
     const bonusPool = Array.from({ length: 45 }, (_, i) => i + 1).filter((n) => !numbers.includes(n));
     return {
       numbers,
-      bonus: includeBonus.checked ? bonusPool[Math.floor(Math.random() * bonusPool.length)] : null,
+      bonus: includeBonus.checked ? bonusPool[getRandomInt(bonusPool.length)] : null,
     };
   });
 
