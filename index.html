@@ -3,443 +3,514 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>로또 번호 생성기 - 6/45 자동 추천</title>
-    <meta name="description" content="로또 6/45 번호를 무료로 자동 생성합니다. 최대 10게임까지 랜덤 조합을 만들고 저장·복사할 수 있는 간단한 도구입니다." />
-    <meta name="author" content="로또 번호 생성기" />
-    <meta name="robots" content="index, follow" />
-    <meta property="og:title" content="로또 번호 생성기 - 6/45 자동 추천" />
-    <meta property="og:description" content="로또 6/45 번호를 무료로 자동 생성하고 저장, 복사, 구간 요약을 제공합니다." />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="ko_KR" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "로또 번호 생성기",
-      "description": "로또 6/45 번호를 무료로 자동 생성하는 웹 도구입니다.",
-      "applicationCategory": "UtilityApplication",
-      "operatingSystem": "Web",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" }
-    }
+    <title>로또 앱 - 번호 생성, 운세, 실수령액 계산</title>
+    <meta
+      name="description"
+      content="모바일 앱 스타일의 로또 번호 생성기입니다. 번호 생성, 오늘의 운세, 실수령액 계산기, 당첨 이력을 한 화면에서 이용할 수 있습니다."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              lottoYellow: "#f5b72e",
+              lottoBlue: "#1458d4",
+              ink: "#151923",
+            },
+            boxShadow: {
+              soft: "0 18px 40px rgba(21, 31, 55, 0.10)",
+            },
+          },
+        },
+      };
     </script>
+    <style>
+      body {
+        font-family: Arial, "Noto Sans KR", sans-serif;
+      }
+
+      .tab-panel {
+        display: none;
+      }
+
+      .tab-panel.active {
+        display: block;
+      }
+
+      .nav-item.active {
+        color: #1458d4;
+      }
+
+      .nav-item.active .nav-icon {
+        background: #1458d4;
+        color: #fff;
+      }
+
+      .lotto-ball {
+        box-shadow:
+          inset 0 -5px 10px rgba(0, 0, 0, 0.22),
+          inset 0 3px 7px rgba(255, 255, 255, 0.3);
+      }
+
+      .mystic-bg {
+        background:
+          radial-gradient(circle at 20% 10%, rgba(245, 183, 46, 0.28), transparent 28%),
+          radial-gradient(circle at 80% 20%, rgba(20, 88, 212, 0.2), transparent 24%),
+          linear-gradient(135deg, #171923, #30214d 52%, #16213f);
+      }
+    </style>
   </head>
-  <body>
-
-    <header class="topbar">
-      <div class="topbar-inner">
-        <div class="brand">
-          <div class="brand-logo" aria-hidden="true">L</div>
-          <div class="brand-text">
-            <span class="brand-name">로또 생성기</span>
-            <span class="brand-tag">6/45</span>
+  <body class="bg-slate-50 text-ink">
+    <div class="mx-auto min-h-screen max-w-md bg-white shadow-soft md:my-6 md:min-h-[860px] md:rounded-[28px] md:border md:border-slate-200">
+      <header class="sticky top-0 z-20 border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-wide text-lottoBlue">Lotto mobile</p>
+            <h1 id="screenTitle" class="text-2xl font-extrabold tracking-tight">로또번호 생성</h1>
           </div>
+          <div class="grid h-11 w-11 place-items-center rounded-2xl bg-lottoYellow text-lg font-black text-white">L</div>
         </div>
-        <nav class="topbar-nav" aria-label="주요 메뉴">
-          <a href="#how-to-use" class="nav-link">이용방법</a>
-          <a href="#analysis-mode" class="nav-link">분석</a>
-          <a href="#about-lotto" class="nav-link">로또란?</a>
-          <a href="#odds" class="nav-link">확률</a>
-          <a href="#faq" class="nav-link">FAQ</a>
-        </nav>
-        <div class="topbar-actions">
-          <button class="topbar-btn" id="soundButton" type="button" title="소리 켜기/끄기" aria-label="소리 켜기/끄기">
-            <svg id="soundIconOn" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-            </svg>
-            <svg id="soundIconOff" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-              <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
-            </svg>
+      </header>
+
+      <main class="px-5 pb-28 pt-5">
+        <section id="tab-generator" class="tab-panel active" aria-labelledby="generatorTitle">
+          <div class="rounded-3xl bg-gradient-to-br from-lottoBlue to-blue-700 p-5 text-white shadow-soft">
+            <p class="text-sm font-bold text-blue-100">LOTTO 6/45</p>
+            <h2 id="generatorTitle" class="mt-1 text-2xl font-extrabold">큰 번호 구슬 생성기</h2>
+            <p class="mt-2 text-sm leading-6 text-blue-100">한 번에 여러 조합을 만들고 저장할 수 있습니다. 모든 조합의 1등 확률은 동일합니다.</p>
+          </div>
+
+          <div class="mt-4 rounded-3xl border border-slate-100 bg-white p-5 shadow-soft">
+            <div class="grid grid-cols-2 gap-3">
+              <label class="rounded-2xl bg-slate-50 p-3">
+                <span class="block text-xs font-bold text-slate-500">게임 수</span>
+                <select id="gameCount" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-lottoBlue">
+                  <option value="1">1게임</option>
+                  <option value="3">3게임</option>
+                  <option value="5" selected>5게임</option>
+                  <option value="10">10게임</option>
+                </select>
+              </label>
+              <label class="rounded-2xl bg-slate-50 p-3">
+                <span class="block text-xs font-bold text-slate-500">보너스 번호</span>
+                <select id="bonusMode" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-lottoBlue">
+                  <option value="off" selected>제외</option>
+                  <option value="on">포함</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="mt-4 grid gap-3">
+              <button id="generateBtn" type="button" class="rounded-2xl bg-lottoBlue px-5 py-4 text-base font-extrabold text-white shadow-lg shadow-blue-900/15 active:scale-[0.98]">
+                번호 생성하기
+              </button>
+              <button id="saveLatestBtn" type="button" class="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-slate-700 active:scale-[0.98]">
+                최신 조합 저장
+              </button>
+            </div>
+          </div>
+
+          <div id="generatedList" class="mt-4 grid gap-3">
+            <div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm font-bold text-slate-500">
+              번호 생성하기를 누르면 조합이 표시됩니다.
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-fortune" class="tab-panel" aria-labelledby="fortuneTitle">
+          <div class="mystic-bg rounded-3xl p-5 text-white shadow-soft">
+            <p class="text-sm font-bold text-yellow-100">Daily fortune</p>
+            <h2 id="fortuneTitle" class="mt-1 text-2xl font-extrabold">오늘의 운세 번호</h2>
+            <p class="mt-2 text-sm leading-6 text-indigo-100">생년월일을 기준으로 오늘의 분위기와 재미용 행운 번호를 보여줍니다.</p>
+          </div>
+
+          <div class="mt-4 rounded-3xl border border-slate-100 bg-white p-5 shadow-soft">
+            <label class="block">
+              <span class="text-sm font-extrabold text-slate-700">생년월일</span>
+              <input id="birthDate" type="date" class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-bold outline-none focus:border-lottoBlue" />
+            </label>
+            <button id="fortuneBtn" type="button" class="mt-4 w-full rounded-2xl bg-lottoYellow px-5 py-4 text-base font-extrabold text-white shadow-lg shadow-yellow-700/15 active:scale-[0.98]">
+              운세 보기
+            </button>
+          </div>
+
+          <article id="fortuneResult" class="mt-4 rounded-3xl border border-indigo-100 bg-indigo-50 p-5 text-center shadow-soft">
+            <p class="text-sm font-bold text-indigo-600">아직 운세를 열지 않았습니다.</p>
+            <p class="mt-2 text-sm leading-6 text-slate-600">생년월일을 입력하면 오늘의 메시지와 번호가 나타납니다.</p>
+          </article>
+        </section>
+
+        <section id="tab-calculator" class="tab-panel" aria-labelledby="calculatorTitle">
+          <div class="rounded-3xl bg-slate-900 p-5 text-white shadow-soft">
+            <p class="text-sm font-bold text-slate-300">Prize calculator</p>
+            <h2 id="calculatorTitle" class="mt-1 text-2xl font-extrabold">실수령액 계산기</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-300">예상 당첨금을 입력하면 세금 적용 후 대략적인 실수령액을 계산합니다.</p>
+          </div>
+
+          <div class="mt-4 rounded-3xl border border-slate-100 bg-white p-5 shadow-soft">
+            <label class="block">
+              <span class="text-sm font-extrabold text-slate-700">당첨금 입력</span>
+              <div class="mt-2 flex items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 focus-within:border-lottoBlue">
+                <input id="prizeAmount" inputmode="numeric" type="text" placeholder="예: 2000000000" class="w-full bg-transparent text-lg font-extrabold outline-none" />
+                <span class="text-sm font-bold text-slate-500">원</span>
+              </div>
+            </label>
+
+            <div class="mt-4 grid grid-cols-3 gap-2">
+              <button class="quick-prize rounded-2xl bg-slate-100 px-3 py-3 text-sm font-extrabold text-slate-700" data-amount="50000">5만원</button>
+              <button class="quick-prize rounded-2xl bg-slate-100 px-3 py-3 text-sm font-extrabold text-slate-700" data-amount="3000000">300만원</button>
+              <button class="quick-prize rounded-2xl bg-slate-100 px-3 py-3 text-sm font-extrabold text-slate-700" data-amount="2000000000">20억원</button>
+            </div>
+          </div>
+
+          <article class="mt-4 rounded-3xl border border-blue-100 bg-blue-50 p-5 shadow-soft">
+            <p class="text-sm font-extrabold text-lottoBlue">예상 실수령액</p>
+            <strong id="netPrize" class="mt-2 block break-words text-4xl font-black tracking-tight text-lottoBlue">0원</strong>
+            <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div class="rounded-2xl bg-white p-3">
+                <span class="block font-bold text-slate-500">예상 세금</span>
+                <strong id="taxAmount" class="mt-1 block text-lg">0원</strong>
+              </div>
+              <div class="rounded-2xl bg-white p-3">
+                <span class="block font-bold text-slate-500">적용 구간</span>
+                <strong id="taxLabel" class="mt-1 block text-lg">비과세</strong>
+              </div>
+            </div>
+            <p class="mt-4 text-xs leading-5 text-slate-500">계산 결과는 참고용입니다. 실제 세율과 수령 절차는 지급 기관 기준에 따릅니다.</p>
+          </article>
+        </section>
+
+        <section id="tab-history" class="tab-panel" aria-labelledby="historyTitle">
+          <div class="rounded-3xl bg-gradient-to-br from-slate-800 to-slate-950 p-5 text-white shadow-soft">
+            <p class="text-sm font-bold text-slate-300">Draw history</p>
+            <h2 id="historyTitle" class="mt-1 text-2xl font-extrabold">당첨 이력</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-300">저장한 조합과 최근 회차 예시 정보를 함께 확인합니다.</p>
+          </div>
+
+          <div class="mt-4 rounded-3xl border border-slate-100 bg-white p-5 shadow-soft">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-extrabold">저장한 번호</h3>
+              <button id="clearSavedBtn" type="button" class="rounded-xl bg-slate-100 px-3 py-2 text-xs font-extrabold text-slate-600">전체 삭제</button>
+            </div>
+            <div id="savedHistory" class="mt-4 grid gap-3">
+              <p class="rounded-2xl bg-slate-50 p-4 text-center text-sm font-bold text-slate-500">저장한 번호가 없습니다.</p>
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-3xl border border-slate-100 bg-white p-5 shadow-soft">
+            <h3 class="text-lg font-extrabold">최근 회차 예시</h3>
+            <div id="drawHistory" class="mt-4 grid gap-3"></div>
+            <p class="mt-4 text-xs leading-5 text-slate-500">정확한 공식 당첨번호는 동행복권에서 확인하세요. 이 목록은 앱 UI 확인용 예시 데이터입니다.</p>
+          </div>
+        </section>
+      </main>
+
+      <nav class="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md border-t border-slate-200 bg-white/95 px-2 pb-3 pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.08)] backdrop-blur md:bottom-6 md:rounded-b-[28px] md:border-x">
+        <div class="grid grid-cols-4 gap-1">
+          <button class="nav-item active flex flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[11px] font-extrabold text-slate-500" data-tab="generator" type="button" aria-label="로또번호 생성">
+            <span class="nav-icon grid h-8 w-8 place-items-center rounded-2xl bg-slate-100">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>
+            </span>
+            생성
           </button>
-          <button class="topbar-btn" id="topThemeButton" type="button" title="테마 변경" aria-label="테마 변경">
-            <svg id="moonIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-            <svg id="sunIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
-              <circle cx="12" cy="12" r="5"/>
-              <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-              <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-            </svg>
+          <button class="nav-item flex flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[11px] font-extrabold text-slate-500" data-tab="fortune" type="button" aria-label="오늘의 운세">
+            <span class="nav-icon grid h-8 w-8 place-items-center rounded-2xl bg-slate-100">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.4 5.6L20 11l-5.6 2.4L12 19l-2.4-5.6L4 11l5.6-2.4L12 3z"/></svg>
+            </span>
+            운세
           </button>
-          <button class="topbar-btn" id="fullscreenButton" type="button" title="전체 화면" aria-label="전체 화면">
-            <svg id="expandIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-            </svg>
-            <svg id="compressIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
-              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
-            </svg>
+          <button class="nav-item flex flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[11px] font-extrabold text-slate-500" data-tab="calculator" type="button" aria-label="실수령액 계산기">
+            <span class="nav-icon grid h-8 w-8 place-items-center rounded-2xl bg-slate-100">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M16 15h0"/></svg>
+            </span>
+            계산
+          </button>
+          <button class="nav-item flex flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[11px] font-extrabold text-slate-500" data-tab="history" type="button" aria-label="당첨 이력">
+            <span class="nav-icon grid h-8 w-8 place-items-center rounded-2xl bg-slate-100">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            </span>
+            이력
           </button>
         </div>
-      </div>
-    </header>
+      </nav>
+    </div>
 
-    <main class="app" id="top">
-      <section class="panel generator" aria-labelledby="app-title">
-        <div class="title-row">
-          <div>
-            <p class="eyebrow">LOTTO 6/45</p>
-            <h1 id="app-title">로또 번호 생성기</h1>
-          </div>
-        </div>
-        <div class="controls" aria-label="생성 설정">
-          <label class="field">
-            <span>게임 수</span>
-            <select id="gameCount">
-              <option value="1">1게임</option>
-              <option value="3">3게임</option>
-              <option value="5" selected>5게임</option>
-              <option value="10">10게임</option>
-            </select>
-          </label>
-          <label class="switch">
-            <input id="includeBonus" type="checkbox" />
-            <span>보너스 번호</span>
-          </label>
-          <label class="switch">
-            <input id="excludeLastDraw" type="checkbox" />
-            <span>직전 회차 번호 제외</span>
-          </label>
-          <label class="field">
-            <span>홀짝 비율</span>
-            <select id="oddEvenRatio">
-              <option value="any" selected>자유</option>
-              <option value="3-3">3:3</option>
-              <option value="4-2">홀 4 / 짝 2</option>
-              <option value="2-4">홀 2 / 짝 4</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>총합 구간</span>
-            <select id="sumRange">
-              <option value="any" selected>자유</option>
-              <option value="80-120">80-120</option>
-              <option value="121-160">121-160</option>
-              <option value="161-200">161-200</option>
-            </select>
-          </label>
-        </div>
-        <div class="actions">
-          <button class="primary" id="generateButton" type="button">번호 생성</button>
-          <button class="secondary" id="copyButton" type="button">복사</button>
-          <button class="secondary" id="clearButton" type="button">초기화</button>
-        </div>
-        <p class="shortcut-hint">
-          <kbd class="kbd">Space</kbd> 또는 <kbd class="kbd">Enter</kbd>로 빠르게 생성
-        </p>
-        <div class="stats" aria-label="요약">
-          <div>
-            <strong id="totalGames">0</strong>
-            <span>생성 게임</span>
-          </div>
-          <div>
-            <strong id="favoriteRange">-</strong>
-            <span>최다 구간</span>
-          </div>
-          <div>
-            <strong id="lastGenerated">-</strong>
-            <span>최근 생성</span>
-          </div>
-        </div>
-      </section>
+    <script>
+      const state = {
+        latestGames: [],
+        savedGames: loadSavedGames(),
+      };
 
-      <section class="results" aria-labelledby="result-title">
-        <div class="section-heading">
-          <h2 id="result-title">생성 결과</h2>
-        </div>
-        <div id="resultList" class="result-list">
-          <p class="empty">번호 생성 버튼을 누르면 추천 조합이 표시됩니다.</p>
-        </div>
-      </section>
+      const tabTitles = {
+        generator: "로또번호 생성",
+        fortune: "오늘의 운세",
+        calculator: "실수령액 계산기",
+        history: "당첨 이력",
+      };
 
-      <section class="panel history" aria-labelledby="history-title">
-        <div class="section-heading">
-          <h2 id="history-title">저장된 조합 <span id="savedCount" class="count-badge"></span></h2>
-          <button class="text-button" id="deleteSavedButton" type="button">전체 삭제</button>
-        </div>
-        <div id="savedList" class="saved-list">
-          <p class="empty">마음에 드는 조합을 저장해 보세요.</p>
-        </div>
-      </section>
-    </main>
+      const sampleDraws = [
+        { round: 1180, date: "예시", numbers: [3, 9, 18, 24, 33, 41], bonus: 12 },
+        { round: 1179, date: "예시", numbers: [5, 11, 16, 28, 34, 42], bonus: 7 },
+        { round: 1178, date: "예시", numbers: [1, 13, 20, 27, 32, 44], bonus: 39 },
+        { round: 1177, date: "예시", numbers: [6, 15, 19, 25, 31, 40], bonus: 2 },
+      ];
 
-    <section class="analysis-dashboard" id="analysis-mode" aria-labelledby="analysis-title">
-      <div class="dashboard-heading">
-        <div>
-          <p class="eyebrow">DATA MODE</p>
-          <h2 id="analysis-title">데이터 기반 분석 모드</h2>
-        </div>
-        <span class="data-badge" id="analysisDrawRange">최근 100회차 샘플</span>
-      </div>
-      <p class="dashboard-note">
-        아래 분석은 최근 회차 패턴을 이해하기 위한 참고 자료입니다. 특정 번호나 필터가 당첨 확률을 높인다는 의미는 아닙니다.
-      </p>
+      document.querySelectorAll(".nav-item").forEach((button) => {
+        button.addEventListener("click", () => switchTab(button.dataset.tab));
+      });
 
-      <div class="dashboard-grid">
-        <article class="metric-card">
-          <span>핫 넘버</span>
-          <div class="number-pills" id="hotNumbers"></div>
-        </article>
-        <article class="metric-card">
-          <span>콜드 넘버</span>
-          <div class="number-pills" id="coldNumbers"></div>
-        </article>
-        <article class="metric-card">
-          <span>직전 회차</span>
-          <div class="number-pills" id="lastDrawNumbers"></div>
-        </article>
-      </div>
+      document.querySelector("#generateBtn").addEventListener("click", generateGames);
+      document.querySelector("#saveLatestBtn").addEventListener("click", saveLatestGames);
+      document.querySelector("#fortuneBtn").addEventListener("click", renderFortune);
+      document.querySelector("#prizeAmount").addEventListener("input", updatePrize);
+      document.querySelector("#clearSavedBtn").addEventListener("click", clearSaved);
 
-      <div class="analysis-layout">
-        <article class="chart-panel" aria-labelledby="frequency-title">
-          <h3 id="frequency-title">번호별 출현 빈도</h3>
-          <div class="frequency-chart" id="frequencyChart"></div>
-        </article>
-        <article class="chart-panel" aria-labelledby="filter-title">
-          <h3 id="filter-title">필터 적용 요약</h3>
-          <div class="filter-summary">
-            <div>
-              <strong id="activeFilterCount">0개</strong>
-              <span>활성 필터</span>
-            </div>
-            <div>
-              <strong id="candidateSignal">기본</strong>
-              <span>후보 제한 강도</span>
-            </div>
-            <div>
-              <strong id="generatedSum">-</strong>
-              <span>최근 생성 총합</span>
-            </div>
-          </div>
-          <div class="constraint-bars" id="constraintBars"></div>
-          <p class="table-note">필터는 조합의 성격을 바꾸는 도구이며, 각 6개 번호 조합의 1등 당첨 확률은 동일합니다.</p>
-        </article>
-      </div>
-    </section>
+      document.querySelectorAll(".quick-prize").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.querySelector("#prizeAmount").value = formatPlainNumber(Number(button.dataset.amount));
+          updatePrize();
+        });
+      });
 
-    <!-- ── 이용 방법 ── -->
-    <div class="content-wrap">
-      <section class="info-section" id="how-to-use" aria-labelledby="how-title">
-        <h2 id="how-title">이용 방법</h2>
-        <p class="info-lead">로또 번호 생성기는 4단계만으로 간편하게 사용할 수 있습니다.</p>
-        <ol class="steps">
-          <li class="step">
-            <div class="step-num" aria-hidden="true">1</div>
-            <div>
-              <strong>게임 수 선택</strong>
-              <p>1게임부터 10게임까지 원하는 수를 선택합니다. 한 번에 여러 조합을 비교할 수 있습니다.</p>
-            </div>
-          </li>
-          <li class="step">
-            <div class="step-num" aria-hidden="true">2</div>
-            <div>
-              <strong>보너스 번호 설정</strong>
-              <p>보너스 번호까지 함께 확인하고 싶다면 활성화하세요. 기본 6개 번호와 중복되지 않는 번호가 추가됩니다.</p>
-            </div>
-          </li>
-          <li class="step">
-            <div class="step-num" aria-hidden="true">3</div>
-            <div>
-              <strong>번호 생성</strong>
-              <p>번호 생성 버튼을 클릭하거나 키보드의 <strong>Space / Enter</strong>를 눌러 순간적으로 번호를 만듭니다.</p>
-            </div>
-          </li>
-          <li class="step">
-            <div class="step-num" aria-hidden="true">4</div>
-            <div>
-              <strong>저장 · 복사 · 구매</strong>
-              <p>마음에 드는 조합은 저장하거나 클립보드에 복사한 뒤 가까운 복권 판매점에서 구매하세요.</p>
-            </div>
-          </li>
-        </ol>
-      </section>
+      renderDrawHistory();
+      renderSavedHistory();
+      generateGames();
 
-      <!-- ── 로또 6/45란? ── -->
-      <section class="info-section" id="about-lotto" aria-labelledby="about-title">
-        <h2 id="about-title">로또 6/45란?</h2>
-        <p class="info-lead">로또 6/45는 대한민국의 대표적인 국가 복권으로, 1부터 45까지의 숫자 중 6개를 선택해 추첨 결과와 일치하는 번호 수에 따라 당첨금을 받는 방식입니다.</p>
-        <div class="about-grid">
-          <div class="about-card">
-            <span class="about-icon" aria-hidden="true">📅</span>
-            <strong>추첨 일정</strong>
-            <p>매주 <strong>토요일 오후 8시 45분</strong>에 KBS2 TV에서 생방송으로 진행됩니다.</p>
-          </div>
-          <div class="about-card">
-            <span class="about-icon" aria-hidden="true">🎟️</span>
-            <strong>구매 방법</strong>
-            <p>전국 복권 판매점 또는 동행복권 공식 앱(만 19세 이상)에서 1장 1,000원에 구매할 수 있습니다.</p>
-          </div>
-          <div class="about-card">
-            <span class="about-icon" aria-hidden="true">🔢</span>
-            <strong>번호 선택</strong>
-            <p>자동, 수동, 혼합 방식으로 번호를 선택할 수 있습니다. 이 도구에서 만든 조합은 수동 번호 선택 참고용으로 활용할 수 있습니다.</p>
-          </div>
-          <div class="about-card">
-            <span class="about-icon" aria-hidden="true">💰</span>
-            <strong>당첨금 수령</strong>
-            <p>5등(5,000원)은 판매점에서 즉시 수령, 4등 이상은 농협은행 또는 동행복권 지사에서 수령합니다.</p>
-          </div>
-        </div>
-      </section>
+      function switchTab(tab) {
+        document.querySelectorAll(".tab-panel").forEach((panel) => panel.classList.remove("active"));
+        document.querySelector(`#tab-${tab}`).classList.add("active");
 
-      <!-- ── 당첨 등급과 확률 ── -->
-      <section class="info-section" id="odds" aria-labelledby="odds-title">
-        <h2 id="odds-title">당첨 등급과 확률</h2>
-        <p class="info-lead">로또 6/45의 당첨 등급은 총 5가지이며, 맞힌 번호 수에 따라 달라집니다.</p>
-        <div class="table-wrap">
-          <table class="grade-table" aria-label="로또 당첨 등급표">
-            <thead>
-              <tr>
-                <th scope="col">등급</th>
-                <th scope="col">당첨 조건</th>
-                <th scope="col">당첨 확률</th>
-                <th scope="col">예상 당첨금</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="grade-1">
-                <td><span class="grade-badge g1">1등</span></td>
-                <td>6개 번호 모두 일치</td>
-                <td>1 / 8,145,060</td>
-                <td>약 20억 원 이상</td>
-              </tr>
-              <tr>
-                <td><span class="grade-badge g2">2등</span></td>
-                <td>5개 번호 + 보너스 번호 일치</td>
-                <td>1 / 1,357,510</td>
-                <td>약 5,000만 원</td>
-              </tr>
-              <tr>
-                <td><span class="grade-badge g3">3등</span></td>
-                <td>5개 번호 일치</td>
-                <td>1 / 35,724</td>
-                <td>150만 원</td>
-              </tr>
-              <tr>
-                <td><span class="grade-badge g4">4등</span></td>
-                <td>4개 번호 일치</td>
-                <td>1 / 733</td>
-                <td>5만 원</td>
-              </tr>
-              <tr>
-                <td><span class="grade-badge g5">5등</span></td>
-                <td>3개 번호 일치</td>
-                <td>1 / 45</td>
-                <td>5,000원</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="table-note">※ 1~3등 당첨금은 해당 회차 판매액과 당첨자 수에 따라 달라집니다.</p>
-      </section>
+        document.querySelectorAll(".nav-item").forEach((item) => item.classList.toggle("active", item.dataset.tab === tab));
+        document.querySelector("#screenTitle").textContent = tabTitles[tab];
 
-      <!-- ── 생성 원리 ── -->
-      <section class="info-section" id="generator-principle" aria-labelledby="principle-title">
-        <h2 id="principle-title">번호 생성 원리</h2>
-        <p class="info-lead">이 도구는 특정 번호를 추천하거나 당첨 가능성을 높인다고 주장하지 않습니다. 모든 조합의 확률은 동일하다는 전제에서, 중복 없는 6개 번호를 무작위로 뽑아 보여줍니다.</p>
-        <div class="principle-grid">
-          <div class="principle-item">
-            <strong>중복 제거</strong>
-            <p>1부터 45까지의 숫자 중 이미 뽑힌 번호는 다시 선택하지 않아 한 게임 안에서 중복 번호가 나오지 않습니다.</p>
-          </div>
-          <div class="principle-item">
-            <strong>브라우저 난수 사용</strong>
-            <p>지원되는 브라우저에서는 `crypto.getRandomValues()`를 사용하고, 지원하지 않는 환경에서는 일반 난수 방식으로 대체합니다.</p>
-          </div>
-          <div class="principle-item">
-            <strong>기기 내 저장</strong>
-            <p>저장한 조합과 테마 설정은 서버가 아니라 현재 브라우저에만 저장됩니다.</p>
-          </div>
-        </div>
-      </section>
+        if (tab === "history") {
+          renderSavedHistory();
+        }
+      }
 
-      <!-- ── FAQ ── -->
-      <section class="info-section" id="faq" aria-labelledby="faq-title">
-        <h2 id="faq-title">자주 묻는 질문</h2>
-        <ul class="faq-list" role="list">
+      function generateGames() {
+        const count = Number(document.querySelector("#gameCount").value);
+        const includeBonus = document.querySelector("#bonusMode").value === "on";
+        state.latestGames = Array.from({ length: count }, () => {
+          const numbers = randomNumbers(6, 45);
+          const bonusPool = Array.from({ length: 45 }, (_, index) => index + 1).filter((number) => !numbers.includes(number));
+          return {
+            id: cryptoRandomId(),
+            numbers,
+            bonus: includeBonus ? bonusPool[randomInt(bonusPool.length)] : null,
+            createdAt: new Date().toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }),
+          };
+        });
 
-          <li class="faq-item">
-            <button class="faq-question" aria-expanded="false">
-              생성된 번호는 실제 당첨 가능성이 있나요?
-              <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="faq-answer" role="region">
-              <p>모든 번호 조합은 동일한 확률을 가집니다. 이 서비스는 번호 선택을 돕는 무작위 생성 도구이며, 특정 조합의 당첨 가능성을 높이거나 당첨을 보장하지 않습니다.</p>
-            </div>
-          </li>
+        renderGenerated();
+      }
 
-          <li class="faq-item">
-            <button class="faq-question" aria-expanded="false">
-              저장한 번호는 어디에 보관되나요?
-              <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="faq-answer" role="region">
-              <p>저장된 번호는 사용자 기기의 브라우저 로컬 스토리지(LocalStorage)에만 저장됩니다. 서버로 전송되거나 외부에 공유되지 않으므로 개인 정보 걱정 없이 사용하실 수 있습니다. 브라우저 데이터를 초기화하면 저장 내용도 함께 삭제됩니다.</p>
-            </div>
-          </li>
+      function randomNumbers(size, max) {
+        const numbers = new Set();
+        while (numbers.size < size) {
+          numbers.add(randomInt(max) + 1);
+        }
+        return [...numbers].sort((a, b) => a - b);
+      }
 
-          <li class="faq-item">
-            <button class="faq-question" aria-expanded="false">
-              이 서비스는 무료인가요?
-              <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="faq-answer" role="region">
-              <p>무료입니다. 회원 가입, 로그인, 개인 정보 입력 없이 바로 사용할 수 있습니다. 향후 광고가 표시될 수 있지만 사용자에게 별도 비용이 청구되지는 않습니다.</p>
-            </div>
-          </li>
+      function randomInt(maxExclusive) {
+        if (!window.crypto?.getRandomValues) {
+          return Math.floor(Math.random() * maxExclusive);
+        }
 
-          <li class="faq-item">
-            <button class="faq-question" aria-expanded="false">
-              생성한 번호를 어떻게 구매하나요?
-              <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="faq-answer" role="region">
-              <p>복사 버튼으로 번호를 클립보드에 복사한 뒤, 가까운 복권 판매점 또는 동행복권 공식 사이트(만 19세 이상)에서 수동으로 입력하여 구매하시면 됩니다. 판매점에서는 직원에게 번호를 말씀하시거나 종이에 적어 제출하시면 됩니다.</p>
-            </div>
-          </li>
+        const values = new Uint32Array(1);
+        const limit = 0xffffffff - (0xffffffff % maxExclusive);
+        do {
+          window.crypto.getRandomValues(values);
+        } while (values[0] >= limit);
+        return values[0] % maxExclusive;
+      }
 
-          <li class="faq-item">
-            <button class="faq-question" aria-expanded="false">
-              모바일에서도 사용할 수 있나요?
-              <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="faq-answer" role="region">
-              <p>네, 스마트폰, 태블릿, PC 등 모든 기기에서 최적화된 화면으로 사용할 수 있습니다. 별도의 앱 설치 없이 브라우저에서 바로 이용 가능합니다.</p>
-            </div>
-          </li>
+      function cryptoRandomId() {
+        return `${Date.now()}-${randomInt(1000000)}`;
+      }
 
-        </ul>
-      </section>
-    </div><!-- /content-wrap -->
+      function renderGenerated() {
+        const list = document.querySelector("#generatedList");
+        list.replaceChildren(...state.latestGames.map((game, index) => createGameCard(game, `${index + 1}게임`)));
+      }
 
-    <!-- ── Footer ── -->
-    <footer class="site-footer">
-      <div class="footer-inner">
-        <div class="footer-brand">
-          <strong>로또 번호 생성기</strong><br />
-          <span>© 2024 LottoGen. All rights reserved.</span>
-        </div>
-        <nav class="footer-links" aria-label="하단 메뉴">
-          <a href="privacy.html">개인정보처리방침</a>
-          <a href="#about-lotto">서비스 소개</a>
-          <a href="#faq">FAQ</a>
-        </nav>
-        <p class="disclaimer">
-          본 사이트는 참고용 로또 번호 생성 도구이며, 당첨을 보장하지 않습니다.
-          실제 복권 구매는 만 19세 이상만 가능하며, 과도한 복권 구매는 가계에 부담을 줄 수 있습니다.
-          복권위원회 공식 사이트: <a href="https://www.dhlottery.co.kr" target="_blank" rel="noopener noreferrer">동행복권</a>
-        </p>
-      </div>
-    </footer>
+      function createGameCard(game, label) {
+        const card = document.createElement("article");
+        card.className = "rounded-3xl border border-slate-100 bg-white p-5 shadow-soft";
 
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <script src="script.js"></script>
+        const header = document.createElement("div");
+        header.className = "mb-4 flex items-center justify-between";
+        header.innerHTML = `<strong class="text-sm text-slate-500">${label}</strong><span class="text-xs font-bold text-slate-400">${game.createdAt || ""}</span>`;
+
+        const balls = document.createElement("div");
+        balls.className = "flex flex-wrap gap-2";
+        game.numbers.forEach((number) => balls.append(createBall(number, "h-12 w-12 text-lg")));
+
+        if (game.bonus) {
+          const plus = document.createElement("span");
+          plus.className = "grid h-12 place-items-center px-1 text-xl font-black text-slate-400";
+          plus.textContent = "+";
+          balls.append(plus, createBall(game.bonus, "h-12 w-12 text-lg"));
+        }
+
+        card.append(header, balls);
+        return card;
+      }
+
+      function createBall(number, sizeClass = "h-9 w-9 text-sm") {
+        const ball = document.createElement("span");
+        ball.className = `lotto-ball grid ${sizeClass} place-items-center rounded-full font-black text-white ${ballColor(number)}`;
+        ball.textContent = number;
+        return ball;
+      }
+
+      function ballColor(number) {
+        if (number <= 10) return "bg-lottoYellow";
+        if (number <= 20) return "bg-lottoBlue";
+        if (number <= 30) return "bg-red-500";
+        if (number <= 40) return "bg-slate-500";
+        return "bg-emerald-500";
+      }
+
+      function saveLatestGames() {
+        if (state.latestGames.length === 0) return;
+        state.savedGames = [...state.latestGames, ...state.savedGames].slice(0, 30);
+        localStorage.setItem("lotto.app.saved", JSON.stringify(state.savedGames));
+        renderSavedHistory();
+        showTemporaryText("#saveLatestBtn", "저장 완료");
+      }
+
+      function loadSavedGames() {
+        try {
+          return JSON.parse(localStorage.getItem("lotto.app.saved")) || [];
+        } catch {
+          return [];
+        }
+      }
+
+      function renderSavedHistory() {
+        const list = document.querySelector("#savedHistory");
+        if (state.savedGames.length === 0) {
+          list.innerHTML = '<p class="rounded-2xl bg-slate-50 p-4 text-center text-sm font-bold text-slate-500">저장한 번호가 없습니다.</p>';
+          return;
+        }
+
+        list.replaceChildren(...state.savedGames.map((game, index) => createGameCard(game, `저장 ${index + 1}`)));
+      }
+
+      function clearSaved() {
+        state.savedGames = [];
+        localStorage.removeItem("lotto.app.saved");
+        renderSavedHistory();
+      }
+
+      function renderFortune() {
+        const birthDate = document.querySelector("#birthDate").value;
+        const result = document.querySelector("#fortuneResult");
+        if (!birthDate) {
+          result.innerHTML = '<p class="text-sm font-bold text-indigo-600">생년월일을 먼저 입력해 주세요.</p>';
+          return;
+        }
+
+        const seed = Number(birthDate.replaceAll("-", "")) + Number(new Date().toISOString().slice(0, 10).replaceAll("-", ""));
+        const messages = [
+          "작은 선택을 빠르게 정리하면 흐름이 좋아지는 날입니다.",
+          "낯선 숫자보다 균형 잡힌 조합이 마음을 편하게 해줍니다.",
+          "기대보다 기록과 절제가 더 좋은 판단을 만드는 날입니다.",
+          "즐거움은 가볍게, 선택은 차분하게 가져가기 좋은 날입니다.",
+        ];
+        const mood = messages[seed % messages.length];
+        const numbers = seededNumbers(seed, 6, 45);
+
+        result.innerHTML = `
+          <p class="text-sm font-extrabold text-indigo-700">오늘의 메시지</p>
+          <p class="mt-3 text-lg font-black leading-7 text-slate-900">${mood}</p>
+          <div class="mt-5 flex flex-wrap justify-center gap-2" id="fortuneBalls"></div>
+          <p class="mt-4 text-xs leading-5 text-slate-500">운세 번호는 재미용 콘텐츠이며 당첨을 보장하지 않습니다.</p>
+        `;
+
+        const container = document.querySelector("#fortuneBalls");
+        numbers.forEach((number) => container.append(createBall(number)));
+      }
+
+      function seededNumbers(seed, size, max) {
+        let current = seed >>> 0;
+        const numbers = new Set();
+        while (numbers.size < size) {
+          current = (current * 1664525 + 1013904223) >>> 0;
+          numbers.add((current % max) + 1);
+        }
+        return [...numbers].sort((a, b) => a - b);
+      }
+
+      function updatePrize() {
+        const input = document.querySelector("#prizeAmount");
+        const amount = Number(input.value.replaceAll(",", "").replace(/[^\d]/g, ""));
+        input.value = amount ? formatPlainNumber(amount) : "";
+
+        const tax = calculateTax(amount);
+        const net = Math.max(0, amount - tax.amount);
+        document.querySelector("#netPrize").textContent = formatWon(net);
+        document.querySelector("#taxAmount").textContent = formatWon(tax.amount);
+        document.querySelector("#taxLabel").textContent = tax.label;
+      }
+
+      function calculateTax(amount) {
+        if (!amount || amount <= 50000) {
+          return { amount: 0, label: "비과세" };
+        }
+
+        if (amount <= 300000000) {
+          return { amount: Math.floor(amount * 0.22), label: "22%" };
+        }
+
+        const baseTax = Math.floor(300000000 * 0.22);
+        const extraTax = Math.floor((amount - 300000000) * 0.33);
+        return { amount: baseTax + extraTax, label: "누진 22%/33%" };
+      }
+
+      function renderDrawHistory() {
+        const list = document.querySelector("#drawHistory");
+        list.replaceChildren(
+          ...sampleDraws.map((draw) => {
+            const item = document.createElement("article");
+            item.className = "rounded-2xl bg-slate-50 p-4";
+            item.innerHTML = `
+              <div class="mb-3 flex items-center justify-between">
+                <strong>${draw.round}회</strong>
+                <span class="text-xs font-bold text-slate-500">${draw.date}</span>
+              </div>
+              <div class="flex flex-wrap gap-2" data-draw="${draw.round}"></div>
+            `;
+            const balls = item.querySelector("[data-draw]");
+            draw.numbers.forEach((number) => balls.append(createBall(number)));
+            const plus = document.createElement("span");
+            plus.className = "grid h-9 place-items-center px-1 text-sm font-black text-slate-400";
+            plus.textContent = "+";
+            balls.append(plus, createBall(draw.bonus));
+            return item;
+          }),
+        );
+      }
+
+      function formatPlainNumber(value) {
+        return new Intl.NumberFormat("ko-KR").format(value);
+      }
+
+      function formatWon(value) {
+        return `${formatPlainNumber(value)}원`;
+      }
+
+      function showTemporaryText(selector, text) {
+        const button = document.querySelector(selector);
+        const original = button.textContent;
+        button.textContent = text;
+        setTimeout(() => {
+          button.textContent = original;
+        }, 1400);
+      }
+    </script>
   </body>
 </html>
